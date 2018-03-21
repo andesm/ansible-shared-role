@@ -1,0 +1,62 @@
+---
+
+- name: Replace the config parameter
+  replace:
+    dest: '{{ item.0.file }}'
+    regexp: '{{ item.1.regexp }}'
+    replace: '{{ item.1.replace }}'
+    backup: yes
+  with_subelements:
+    - '{{ replaces }}'
+    - contents
+  when: replaces.0.contents.0 is not none
+  notify:
+    '{{ item.0.notify }}'
+
+- name: Insert the config parameter
+  blockinfile:
+    dest: '{{ item.0.file }}'
+    insertafter: '{{ item.1.insertafter }}'
+    block: |
+      {{ item.1.block }}
+    marker: '# {mark} ANSIBLE MANAGED BLOCK {{ item.1.insertafter }}'
+    state: "{{ item.1.state | default('present') }}"
+    backup: yes
+  with_subelements:
+    - '{{ blockinfiles }}'
+    - contents
+  when: blockinfiles.0.contents.0 is not none
+  notify:
+    '{{ item.0.notify }}'
+
+- name: Create the config parameter from templates
+  template:
+    src: '{{ item.1.path | basename }}.j2'
+    dest: '{{ item.1.path }}'
+    owner: "{{ item.1.owner | default('root') }}"
+    group: "{{ item.1.group | default('root') }}"
+    mode: "{{ item.1.mode | default('0644') }}"
+    backup: yes
+  with_subelements:
+    - '{{ templates }}'
+    - files
+  when: templates.0.files.0 is not none
+  notify:
+    '{{ item.0.notify }}'
+
+- name: Create the config parameter from files
+  copy:
+    src: '{{ item.1.path | basename }}'
+    dest: '{{ item.1.path | dirname }}'
+    owner: "{{ item.1.owner | default('root') }}"
+    group: "{{ item.1.group | default('root') }}"
+    mode: "{{ item.1.mode | default('0644') }}"
+    backup: yes
+  with_subelements:
+    - '{{ copy }}'
+    - files
+  when: copy.0.files.0 is not none
+  notify:
+    '{{ item.0.notify }}'
+
+    

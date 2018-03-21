@@ -1,0 +1,22 @@
+---
+
+#- name: Enable and start the services
+#  systemd:
+#    name: '{{ item }}'
+#    enabled: yes
+#    state: started
+#  with_items:
+#    '{{ services }}'
+
+- name: Enable the services
+  command: systemctl enable '{{ item }}'
+  changed_when: false
+  with_items:
+    '{{ services }}'
+
+- name: Start the services
+  command: systemctl start '{{ item }}'
+  changed_when: false
+  with_items:
+    '{{ services }}'
+    

@@ -1,0 +1,20 @@
+---
+
+- name: Set the ansible_tmp_dir
+  set_fact: ansible_tmp_dir='{{ ansible_user_dir }}/ansible_tmp/{{role_path|basename}}'
+
+- name: Create the ansible_tmp_dir
+  file:
+    path: '{{ ansible_tmp_dir }}'
+    state: directory
+
+- name: Reset the config valiable
+  include_vars: roles/lib/vars/config_default.yml
+  
+- name: Set the role valiables
+  include_vars: main.yml
+
+
+  
+
+  

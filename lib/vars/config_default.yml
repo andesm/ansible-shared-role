@@ -1,0 +1,29 @@
+---
+
+aur_block:
+
+packages:
+  - 
+
+pip:
+  -
+  
+services:
+  - 
+
+replaces:
+  - contents:
+      -
+            
+blockinfiles:
+  - contents:
+      - 
+
+templates:
+  - files:
+      -
+
+copy:
+  - files:
+      - 
+        

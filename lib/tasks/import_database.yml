@@ -1,0 +1,23 @@
+---
+
+- name: Check the database sql file exists
+  local_action: stat path='{{ role_path }}/templates/mariadb.sql.j2'
+  register: st
+  become: no
+
+- name: Create the database sql file
+  template:
+    src: mariadb.sql.j2
+    dest: '{{ ansible_tmp_dir }}/mariadb.sql'
+  register: result
+  when: st.stat.exists
+
+- name: Import the database
+  mysql_db:
+    state: import
+    name: all
+    login_user: root
+    login_password: '{{ openstack_password }}'
+    target: '{{ ansible_tmp_dir }}/mariadb.sql'
+  when: result.changed
+  

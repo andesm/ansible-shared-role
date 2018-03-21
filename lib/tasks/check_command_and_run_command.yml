@@ -1,0 +1,14 @@
+---
+
+- name: Check whether command should run or not
+  shell: '{{ check_command }}'
+  failed_when: False
+  register: result
+  changed_when: False
+
+- name: Run command
+  shell: '{{ run_command }}'
+  when: result | failed
+  changed_when: False
+  become: true
+  become_user: '{{ user }}'

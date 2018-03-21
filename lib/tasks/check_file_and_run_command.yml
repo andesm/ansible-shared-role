@@ -1,0 +1,17 @@
+---
+
+- name: Check whether command should run or not
+  stat:
+    path: '{{ check_file }}'
+  failed_when: False
+  register: result
+  changed_when: False
+
+- name: Run command
+  shell: '{{ run_command }}'
+  become: true
+  become_user: '{{ user }}'
+  when: not result.stat.exists
+  changed_when: False
+
+  

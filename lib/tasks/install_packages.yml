@@ -1,0 +1,48 @@
+---
+
+- block:
+    - name: Install the related packages (Ubuntu)
+      apt:
+        name: '{{ item }}'
+        state: latest
+        update_cache: true
+      with_items:
+        '{{ packages }}'
+  when: ansible_distribution == 'Ubuntu'
+
+- block:
+    - name: add the Arch User Repository
+      blockinfile:
+        dest: /etc/pacman.conf
+        insertafter: EOF
+        block: |
+          {{ aur_block }}
+        backup: yes
+      when: aur_block is not none
+
+    - name: update archlinux-keyring
+      command: pacman --noconfirm -Syy archlinux-keyring
+      changed_when: False
+    
+    - name: Run the equivalent of "pacman -Syu"
+      pacman:
+        upgrade: true
+        update_cache: true
+  
+    - name: Install the related packages (ArchLinux)
+      pacman:
+        name: '{{ item }}'
+      with_items:
+        '{{ packages }}'
+      failed_when: False
+
+  when: ansible_distribution == 'Archlinux'
+      
+- name: Install python packages
+  pip:
+    name: '{{ item }}'
+  with_items:
+    '{{ pip }}'
+  when: item is not none
+    
+  
