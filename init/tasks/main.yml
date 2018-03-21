@@ -1,0 +1,74 @@
+---
+
+- name: Reset the valiable of replaces/blockinfiles/templates
+  include_vars: config_default.yml
+
+- name: Adds or removes an SSH authorized key
+  authorized_key:
+    user: andesm
+    key: "{{ lookup('file', '/home/andesm/.ssh/id_rsa.pub') }}"
+
+- block:
+    - name: Edit the /etc/apt/sources.list file
+      replace:
+        dest: /etc/apt/sources.list
+        regexp: '{{ item.regexp }}'
+        replace: '{{ item.replace }}'
+        backup: yes
+      with_items:
+        - regexp: 'http://(us\.)?(archive|security)\.ubuntu\.com/ubuntu'
+          replace: 'http://ftp.riken.jp/Linux/ubuntu'
+        - regexp: '^deb cdrom'
+          replace: '#deb cdrom'
+
+    - name: dist-upgrade (Ubuntu)
+      apt:
+        upgrade: dist
+        update_cache: true
+        
+    - name: Install the related packages (Ubuntu)
+      apt:
+        name: '{{ item }}'
+        state: latest
+      with_items:
+        - python-pip
+        - python-pexpect
+      
+  when: ansible_distribution == 'Ubuntu'
+
+- block:
+  
+  - include: roles/lib/tasks/create_configs.yml
+    vars:
+      blockinfiles:
+        - file: /etc/pacman.d/mirrorlist
+          contents:
+            - insertafter: '## Arch Linux'
+              block: |
+                Server = http://ftp.jaist.ac.jp/pub/Linux/ArchLinux/$repo/os/$arch
+                Server = http://ftp.tsukuba.wide.ad.jp/Linux/archlinux/$repo/os/$arch
+          notify:
+            - noop
+
+#  - name: Update your keyring
+#    shell: 
+#    changed_when: False
+
+  - name: Run the equivalent of pacman update_cache and upgrade
+    pacman:
+      update_cache: yes
+      upgrade: yes
+    changed_when: false
+    register: result
+
+  #- debug: var=result
+    
+  #- include: roles/lib/tasks/reboot.yml
+  
+  - name: Install the related packages (ArchLinux)
+    pacman:
+      name: '{{ item }}'
+    with_items:
+      - python2-pexpect
+        
+  when: ansible_distribution == 'Archlinux'
