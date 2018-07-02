@@ -5,7 +5,7 @@
 
 - name: Adds or removes an SSH authorized key
   authorized_key:
-    user: andesm
+    user: openstack
     key: "{{ lookup('file', '/home/andesm/.ssh/id_rsa.pub') }}"
 
 - block:
@@ -31,8 +31,8 @@
         name: '{{ item }}'
         state: latest
       with_items:
-        - python-pip
-        - python-pexpect
+        - python3-pip
+        - python3-pexpect
       
   when: ansible_distribution == 'Ubuntu'
 
@@ -50,10 +50,6 @@
           notify:
             - noop
 
-#  - name: Update your keyring
-#    shell: 
-#    changed_when: False
-
   - name: Run the equivalent of pacman update_cache and upgrade
     pacman:
       update_cache: yes
@@ -61,14 +57,10 @@
     changed_when: false
     register: result
 
-  #- debug: var=result
-    
-  #- include: roles/lib/tasks/reboot.yml
-  
   - name: Install the related packages (ArchLinux)
     pacman:
       name: '{{ item }}'
     with_items:
-      - python2-pexpect
+      - python3-pexpect
         
   when: ansible_distribution == 'Archlinux'
